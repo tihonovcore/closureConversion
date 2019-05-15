@@ -108,7 +108,6 @@ public class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
         sb.append("function ");
-        sb.append(functionNode.getName());
         sb.append("(");
         for (int i = 0; i < functionNode.getParameters().size(); i++) {
             sb.append(functionNode.getParameters().get(i).getName());

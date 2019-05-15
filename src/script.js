@@ -1,7 +1,7 @@
 var t = "p";
 
-var fun1 = function() {
-    var f = function() {
+var fun1 = function () {
+    var f = function () {
         print('asd');
     };
 
