@@ -1,8 +1,7 @@
 import jdk.nashorn.internal.ir.*;
 import jdk.nashorn.internal.ir.visitor.NodeVisitor;
-import jdk.nashorn.internal.parser.TokenType;
 
-import java.io.BufferedReader;
+import java.util.List;
 
 public class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
     /**
@@ -14,182 +13,131 @@ public class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
         super(lc);
     }
 
-    private StringBuilder sb = new StringBuilder();
+    private StringBuilder result = new StringBuilder();
 
-    int countSpaces = 0;
-    StringBuilder tabulation = new StringBuilder();
+    private StringBuilder indent = new StringBuilder();
 
-    private StringBuilder tab() {
-        if (countSpaces == tabulation.length()) {
-            return tabulation;
-        }
-
-        if (countSpaces < tabulation.length()) {
-            tabulation.delete(countSpaces, tabulation.length());
-        }
-
-        while (countSpaces > tabulation.length()) {
-            tabulation.append(" ");
-        }
-
-        return tabulation;
+    StringBuilder getString() {
+        return result;
     }
 
-    public StringBuilder getString() {
-        return sb;
+    private void append(String... s) {
+        for (String value : s) {
+            result.append(value);
+        }
     }
-
-//    @Override
-//    protected boolean enterDefault(Node node) {
-//        sb.append("> " + node.tokenType() + " " + node.position());
-//        return super.enterDefault(node);
-//    }
-//
-//    @Override
-//    protected Node leaveDefault(Node node) {
-//        sb.append("< " + node.tokenType() + " " + node.position());
-//        return super.leaveDefault(node);
-//    }
-
-//    @Override
-//    public boolean enterLiteralNode(LiteralNode<?> literalNode) {
-//        if (literalNode.isNumeric()) {
-//            sb.append(literalNode.getString());
-//        } else if (literalNode.isString()) {
-//            sb.append("\"").append(literalNode.getString()).append("\"");
-//        }
-//        return true;
-//    }
 
     @Override
-    public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
-        Expression expression = expressionStatement.getExpression();
-        sb.append(tab());
-        if (expression instanceof RuntimeNode) {
-            expression.accept(this);
-            return false;
+    public boolean enterFunctionNode(FunctionNode functionNode) {
+        append("function ", "(");
+
+        List<IdentNode> parameters = functionNode.getParameters();
+        for (int i = 0; i < parameters.size() - 1; i++) {
+            append(parameters.get(i).getName());
+            append(", ");
         }
+        if (parameters.size() != 0) append(getLast(parameters).getName());
+
+        append(") ");
+
         return true;
     }
 
     @Override
-    public Node leaveExpressionStatement(ExpressionStatement expressionStatement) {
-        sb.append(";\n");
-        return expressionStatement;
+    public boolean enterLiteralNode(LiteralNode<?> literalNode) {
+        if (literalNode.isNumeric()) {
+            append(literalNode.getString());
+        } else if (literalNode.isString()) {
+            append("\"", literalNode.getString(), "\"");
+        }
+        return false;
     }
 
     @Override
     public boolean enterBlock(Block block) {
-        sb.append("{\n");
-        countSpaces += 4;
+        append("{\n");
+        indent.append("    ");
         return true;
     }
 
     @Override
     public Node leaveBlock(Block block) {
-        countSpaces -= 4;
-        sb.append(tab()).append("}\n");
+        if (indent.length() > 0) {
+            indent.delete(indent.length() - 4, indent.length());
+        }
+
+        append(indent.toString(), "}");
         return block;
     }
 
     @Override
-    public boolean enterReturnNode(ReturnNode returnNode) {
-        sb.append(tab()).append("return ");
-        sb.append(returnNode.getExpression());
-        return true;
-    }
+    public boolean enterExpressionStatement(ExpressionStatement expressionStatement) {
+        Expression expression = expressionStatement.getExpression();
 
-    @Override
-    public Node leaveReturnNode(ReturnNode returnNode) {
-        sb.append(";\n");
-        return returnNode;
-    }
-
-    @Override
-    public boolean enterFunctionNode(FunctionNode functionNode) {
-        sb.append("function ");
-        sb.append("(");
-        for (int i = 0; i < functionNode.getParameters().size(); i++) {
-            sb.append(functionNode.getParameters().get(i).getName());
-            if (i + 1 != functionNode.getParameters().size()) {
-                sb.append(", ");
-            }
+        append(indent.toString());
+        if (expression instanceof RuntimeNode) {
+            expression.accept(this);
+            return false;
         }
-        sb.append(") ");
+        append(";\n");
         return true;
+    }
+
+    @Override
+    public boolean enterReturnNode(ReturnNode returnNode) {
+        append(indent.toString(), "return ");
+        returnNode.getExpression().accept(this);
+        append(";\n");
+        return false;
+    }
+
+    @Override
+    public boolean enterUnaryNode(UnaryNode unaryNode) {
+        append(unaryNode.tokenType() + "");
+        unaryNode.getExpression().accept(this);
+        return false;
     }
 
     @Override
     public boolean enterVarNode(VarNode varNode) {
-        sb.append(tab()).append("var ");
-        sb.append(varNode.getName().getName()).append(" = ");
-        return true;
-    }
-
-    @Override
-    public Node leaveVarNode(VarNode varNode) {
-        if (!(varNode.getAssignmentSource() instanceof FunctionNode)) {
-            sb.append(varNode.getAssignmentSource());
-            sb.append(";\n");
-        }
-        return varNode;
+        append(indent.toString(), "var ");
+        append(varNode.getName().getName(), " = ");
+        varNode.getAssignmentSource().accept(this);
+        append(";\n");
+        return false;
     }
 
     @Override
     public boolean enterBinaryNode(BinaryNode binaryNode) {
-        if (binaryNode.getAssignmentDest() != null) {
-            if (binaryNode.getAssignmentDest() instanceof CallNode) {
-//                binaryNode.getAssignmentDest().accept(this);
-                return false;
-            } else if (binaryNode.getAssignmentDest() instanceof BinaryNode) {
-                binaryNode.getAssignmentDest().accept(this);
-                return false;
-            }
+        binaryNode.lhs().accept(this);
+        append(" ", binaryNode.tokenType().toString(), " ");
+        binaryNode.rhs().accept(this);
+        return false;
+    }
 
-            sb.append(binaryNode.getAssignmentDest().toString(false));
-        }
-
-        if (binaryNode.getAssignmentDest() == null && !(binaryNode.lhs() instanceof CallNode)) {
-            sb.append(binaryNode.lhs().toString(false));
-        }
-
-        boolean flag = true;
-        if (binaryNode.lhs() instanceof CallNode) {
-            binaryNode.lhs().accept(this);
-flag = false;
-        }
-
-        sb.append(binaryNode.tokenType() == TokenType.ADD ? " + " : " = ");
-
-        if (binaryNode.getAssignmentSource() != null) {
-            if (binaryNode.getAssignmentSource() instanceof CallNode) {
-                binaryNode.getAssignmentSource().accept(this);
-                return false;
-            } else if (binaryNode.getAssignmentSource() instanceof BinaryNode) {
-                binaryNode.getAssignmentSource().accept(this);
-                return false;
-            }
-            sb.append((binaryNode.getAssignmentSource().toString(false)));
-        }
-        return true && flag;
+    @Override
+    public boolean enterIdentNode(IdentNode identNode) {
+        append(identNode.getName());
+        return false;
     }
 
     @Override
     public boolean enterCallNode(CallNode callNode) {
-        callNode.getFunction().toString(sb, false);
-        sb.append("(");
-        for (Expression expression : callNode.getArgs()) {
-            if (expression instanceof BinaryNode) {
-            } else {
-                expression.toString(sb, false);
-            }
+        append(callNode.getFunction().toString(false));
+        append("(");
+
+        List<Expression> args = callNode.getArgs();
+        for (int i = 0; i < args.size() - 1; i++) {
+            args.get(i).accept(this);
+            append(", ");
         }
-        return true;
+        if (args.size() != 0) getLast(args).accept(this);
+
+        append(")");
+        return false;
     }
 
-    @Override
-    public Node leaveCallNode(CallNode callNode) {
-        sb.append(")");
-        return callNode;
+    private <T> T getLast(List<T> list) {
+        return list.get(list.size() - 1);
     }
 }
