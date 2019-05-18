@@ -1,18 +1,17 @@
-var fun1 = function () {
-    var a = function () {
-        print('a');
-    };
+var a = 10 + 9 + 8;
 
-    var ba = function () {
-        print('b' + a());
+function B() {
+    var b = a + 5;
+
+    function C() {
+        var c = b;
+
+        function D() {
+            var d = b + c;
+        }
     }
-};
+}
 
-var fun2 = function (object) {
-    var one = 1;
-    var two = 2;
-
-    var tree = function () {
-        return one + two;
-    }
-};
+function fun() {
+    return B();
+}

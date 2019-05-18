@@ -1,21 +1,14 @@
-var t = "p";
+function A() {
+    var a = 5;
 
-var fun1 = function () {
-    var f = function () {
-        print('asd');
-    };
+    function B() {
+        var b = a;
 
-    f = 21 + square(t);
-
-    return f + 15;
-};
-
-t = 23456789;
-
-var square = function(value) {
-    return value + value;
-};
-
-var fun2 = function (object) {
-    print(Object.prototype.toString.call(object) + "STRING");
-};
+        function C() {
+            var c = a + b;
+            return c;
+        }
+        return b;
+    }
+    return a;
+}

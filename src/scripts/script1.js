@@ -1,17 +1,12 @@
 var t = "p";
 
-var fun1 = function () {
-    var f = function () {
-        print('asd');
+function fun() {
+    var a = 5;
+    a = 45;
+
+    function f() {
+        var ins = a + t;
     };
 
-    var a = 5;
-    a = 4 + 8 + print('asda');
-
-    print('Hi there from Javascript, ');
-    return "greetings from javascript";
-};
-
-var fun2 = function (object) {
-    print("JS Class Definition: " + Object.prototype.toString.call(object));
+    var res = f();
 };
