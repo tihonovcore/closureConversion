@@ -2,6 +2,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.annotation.Native;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -44,7 +45,7 @@ public class TestConverter {
     }
 
     private StringBuilder getExists(int testNumber) {
-        StringBuilder exists = new StringBuilder("function() {");
+        StringBuilder exists = new StringBuilder("function:program() {");
         try (var reader = Files.newBufferedReader(Paths.get(getTestPath(testNumber)))) {
             int c;
             while ((c = reader.read()) != -1) {
@@ -84,6 +85,12 @@ public class TestConverter {
     @Test
     public void arguments() {
         int testNumber = 5;
+        similar(getActual(testNumber), getExists(testNumber));
+    }
+
+    @Test
+    public void funcionsDef() {
+        int testNumber = 6;
         similar(getActual(testNumber), getExists(testNumber));
     }
 }

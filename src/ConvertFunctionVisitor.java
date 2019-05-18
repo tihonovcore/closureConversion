@@ -29,7 +29,11 @@ public class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
 
     @Override
     public boolean enterFunctionNode(FunctionNode functionNode) {
-        append("function ", "(");
+        append("function ");
+        if (!functionNode.isAnonymous()) {
+            append(functionNode.getName());
+        }
+        append("(");
 
         List<IdentNode> parameters = functionNode.getParameters();
         for (int i = 0; i < parameters.size() - 1; i++) {
@@ -40,7 +44,9 @@ public class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
 
         append(") ");
 
-        return true;
+        functionNode.getBody().accept(this);
+
+        return false;
     }
 
     @Override
@@ -100,8 +106,10 @@ public class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
 
     @Override
     public boolean enterVarNode(VarNode varNode) {
-        append(indent.toString(), "var ");
-        append(varNode.getName().getName(), " = ");
+        if (!varNode.isFunctionDeclaration()) {
+            append(indent.toString(), "var ");
+            append(varNode.getName().getName(), " = ");
+        }
         varNode.getAssignmentSource().accept(this);
         append(";\n");
         return false;
