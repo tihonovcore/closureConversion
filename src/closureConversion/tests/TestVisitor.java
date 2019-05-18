@@ -1,3 +1,5 @@
+package closureConversion.tests;
+
 import jdk.nashorn.internal.ir.*;
 import jdk.nashorn.internal.ir.visitor.NodeVisitor;
 

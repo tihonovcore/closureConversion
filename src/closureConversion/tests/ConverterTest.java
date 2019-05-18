@@ -1,27 +1,26 @@
+package closureConversion.tests;
+
+import closureConversion.Converter;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.LexicalContext;
 import jdk.nashorn.internal.parser.Parser;
 import jdk.nashorn.internal.runtime.Context;
 import jdk.nashorn.internal.runtime.ErrorManager;
-import jdk.nashorn.internal.runtime.ScriptRuntime;
 import jdk.nashorn.internal.runtime.Source;
 import jdk.nashorn.internal.runtime.options.Options;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 
 import static org.junit.Assert.*;
 
 @SuppressWarnings("Duplicates")
-public class FullConverterTest {
+public class ConverterTest {
 
     private String getTestPath(int index) {
-        String testsDirectory = "/home/tihonovcore/IdeaProjects/closureConversion/src/scripts/";
+        String testsDirectory = "/home/tihonovcore/IdeaProjects/closureConversion/src/closureConversion/tests/scripts/";
         return testsDirectory + "script" + index + ".js";
     }
 
@@ -29,6 +28,7 @@ public class FullConverterTest {
         StringBuilder actual = new StringBuilder();
         try {
             actual = Converter.convert(getTestPath(testNumber));
+            System.out.println(actual);
         } catch (IOException e) {
             Assert.fail(e.getMessage()); //todo
         }
@@ -118,6 +118,20 @@ public class FullConverterTest {
     }
 
     @Test
+    public void test5() {
+        int testNumber = 5;
+
+        Pair actual = loadActual(testNumber);
+
+        testDefinition(actual, "fun", "a"); //is it work?
+        testDefinition(actual, "B", "a");
+        testDefinition(actual, "C", "b");
+        testDefinition(actual, "D", "b", "c");
+
+        testCall(actual, "B", "a"); //is it work??
+    }
+
+    @Test
     public void test6() {
         int testNumber = 6;
 
@@ -127,6 +141,20 @@ public class FullConverterTest {
         testDefinition(actual, "foo", "a");
 
         testCall(actual, "bar", "24", "a", "b");
+    }
+
+    @Test
+    public void test7() {
+        int testNumber = 7;
+
+        Pair actual = loadActual(testNumber);
+
+        testDefinition(actual, "A", "a");
+        testDefinition(actual, "B", "a");
+        testDefinition(actual, "C", "a");
+
+        testCall(actual, "B", "a");
+        testCall(actual, "C", "a");
     }
 
     private void testCall(Pair actual, String... call) {
