@@ -157,6 +157,19 @@ public class ConverterTest {
         testCall(actual, "C", "a");
     }
 
+    @Test
+    public void test8() {
+        int testNumber = 8;
+
+        Pair actual = loadActual(testNumber);
+
+        testDefinition(actual, "mom", "a", "b");
+        testDefinition(actual, "dad", "a", "b");
+
+        testCall(actual, "mom", "a", "b");
+        testCall(actual, "dad", "a", "b");
+    }
+
     private void testCall(Pair actual, String... call) {
         StringBuilder message = new StringBuilder("Not found call: ");
         message.append(call[0]).append("(");
