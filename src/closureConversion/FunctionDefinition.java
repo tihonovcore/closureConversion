@@ -19,7 +19,7 @@ class FunctionDefinition {
     Set<String> used;
 
     /**
-     * {@link StringBuilder}
+     * {@link StringBuilder} with text representation of function
      */
     StringBuilder text;
 

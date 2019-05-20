@@ -11,15 +11,6 @@ import java.util.function.Consumer;
  */
 class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
     /**
-     * Constructor
-     *
-     * @param lc a custom lexical context
-     */
-    ConvertFunctionVisitor(LexicalContext lc) {
-        super(lc);
-    }
-
-    /**
      * @param lc                 {@link LexicalContext}
      * @param capturedParameters {@link Map} consists variables which function use,
      *                           but doesn't define it
@@ -31,7 +22,7 @@ class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
 
     private Deque<FunctionDefinition> deque = new ArrayDeque<>();
     private StringBuilder firstLevelFunctions = new StringBuilder();
-    private Map<String, List<String>> capturedParameters = new HashMap<>();
+    private Map<String, List<String>> capturedParameters;
 
     private StringBuilder result = new StringBuilder();
     private StringBuilder indent = new StringBuilder();
@@ -77,18 +68,18 @@ class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
 
         FunctionDefinition current = Objects.requireNonNull(deque.pollFirst());
 
-        Set<String> diff = new HashSet<>(current.used);
+        Set<String> difference = new HashSet<>(current.used);
         if (capturedParameters.containsKey(getLocaleName(functionNode))) {
-            diff.addAll(capturedParameters.get(getLocaleName(functionNode)));
+            difference.addAll(capturedParameters.get(getLocaleName(functionNode)));
         }
-        diff.removeAll(current.defined);
+        difference.removeAll(current.defined);
 
         if (!deque.isEmpty()) {
-            deque.getFirst().used.addAll(diff);
+            deque.getFirst().used.addAll(difference);
         }
 
         //not a closure
-        if (diff.isEmpty()) {
+        if (difference.isEmpty()) {
             append("function ");
             append(functionNode.getName());
             append("(");
@@ -96,7 +87,7 @@ class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
             append(") ", shift(current.text));
         } else { //closure
             current.used.removeAll(current.defined); //captured
-            List<String> captured = new ArrayList<>(diff);
+            List<String> captured = new ArrayList<>(difference);
 
             appendChanged("function ");
             appendChanged(getLocaleName(functionNode));

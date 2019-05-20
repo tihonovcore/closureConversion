@@ -1,5 +1,6 @@
 package closureConversion.tests;
 
+import closureConversion.ConvertException;
 import closureConversion.Converter;
 import jdk.nashorn.internal.ir.FunctionNode;
 import jdk.nashorn.internal.ir.LexicalContext;
@@ -8,31 +9,23 @@ import jdk.nashorn.internal.runtime.Context;
 import jdk.nashorn.internal.runtime.ErrorManager;
 import jdk.nashorn.internal.runtime.Source;
 import jdk.nashorn.internal.runtime.options.Options;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.*;
 
-import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("Duplicates")
 public class ConverterTest {
 
     private String getTestPath(int index) {
-        String testsDirectory = "/home/tihonovcore/IdeaProjects/closureConversion/src/closureConversion/tests/scripts/";
-        return testsDirectory + "script" + index + ".js";
+        return Paths.get("./closureConversion/tests/scripts/script" + index + ".js").toString();
     }
 
-    private StringBuilder getActual(int testNumber) {
-        StringBuilder actual = new StringBuilder();
-        try {
-            actual = Converter.convert(getTestPath(testNumber));
-            System.out.println(actual);
-        } catch (IOException e) {
-            Assert.fail(e.getMessage()); //todo
-        }
-        return actual;
+    private StringBuilder getActual(int testNumber) throws ConvertException {
+        return Converter.convert(getTestPath(testNumber));
     }
 
     private class Pair {
@@ -45,18 +38,18 @@ public class ConverterTest {
         }
     }
 
-    private Pair loadActual(int testNumber) {
+    private Pair loadActual(int testNumber) throws ConvertException {
         Options options = new Options("nashorn");
-        options.set("anon.functions", true);
-        options.set("parse.only", true);
-        options.set("scripting", true);
-
         ErrorManager errors = new ErrorManager();
         Context context = new Context(options, errors, Thread.currentThread().getContextClassLoader());
         Source source = Source.sourceFor("test", getActual(testNumber).toString());
 
         Parser parser = new Parser(context.getEnv(), source, errors);
         FunctionNode functionNode = parser.parse();
+
+        if (errors.hasErrors()) {
+            throw new ConvertException("Error in generated code");
+        }
 
         TestVisitor testVisitor = new TestVisitor(new LexicalContext());
         functionNode.accept(testVisitor);
@@ -68,106 +61,167 @@ public class ConverterTest {
     public void test1() {
         int testNumber = 1;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "fun", "t");
-        testDefinition(actual, "f", "a", "t");
+            testDefinition(actual, "fun", "t");
+            testDefinition(actual, "f", "a", "t");
 
-        testCall(actual, "f", "a", "t");
+            testCall(actual, "f", "a", "t");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test2() {
         int testNumber = 2;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "A");
-        testDefinition(actual, "B", "a");
-        testDefinition(actual, "C", "a", "b");
+            testDefinition(actual, "A");
+            testDefinition(actual, "B", "a");
+            testDefinition(actual, "C", "a", "b");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test3() {
         int testNumber = 3;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "fun", "a"); //is it work?
-        testDefinition(actual, "B", "a");
-        testDefinition(actual, "C", "b");
-        testDefinition(actual, "D", "b", "c");
+            testDefinition(actual, "fun", "a"); //is it work?
+            testDefinition(actual, "B", "a");
+            testDefinition(actual, "C", "b");
+            testDefinition(actual, "D", "b", "c");
 
-        testCall(actual, "B", "a");
+            testCall(actual, "B", "a");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test4() {
         int testNumber = 4;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "fun", "a"); //is it work?
-        testDefinition(actual, "B", "a");
-        testDefinition(actual, "C", "b");
-        testDefinition(actual, "D", "b", "c");
+            testDefinition(actual, "fun", "a"); //is it work?
+            testDefinition(actual, "B", "a");
+            testDefinition(actual, "C", "b");
+            testDefinition(actual, "D", "b", "c");
 
-        testCall(actual, "B", "a");
-        testCall(actual, "C", "b");
-        testCall(actual, "D", "b", "c");
+            testCall(actual, "B", "a");
+            testCall(actual, "C", "b");
+            testCall(actual, "D", "b", "c");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test5() {
         int testNumber = 5;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "fun", "a"); //is it work?
-        testDefinition(actual, "B", "a");
-        testDefinition(actual, "C", "b");
-        testDefinition(actual, "D", "b", "c");
+            testDefinition(actual, "fun", "a");
+            testDefinition(actual, "B", "a");
+            testDefinition(actual, "C", "b");
+            testDefinition(actual, "D", "b", "c");
 
-        testCall(actual, "B", "a"); //is it work??
+            testCall(actual, "B", "a");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test6() {
         int testNumber = 6;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "bar", "a", "b", "c");
-        testDefinition(actual, "foo", "a");
+            testDefinition(actual, "bar", "a", "b", "c");
+            testDefinition(actual, "foo", "a");
 
-        testCall(actual, "bar", "24", "a", "b");
+            testCall(actual, "bar", "24", "a", "b");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test7() {
         int testNumber = 7;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "A", "a");
-        testDefinition(actual, "B", "a");
-        testDefinition(actual, "C", "a");
+            testDefinition(actual, "A", "a");
+            testDefinition(actual, "B", "a");
+            testDefinition(actual, "C", "a");
 
-        testCall(actual, "B", "a");
-        testCall(actual, "C", "a");
+            testCall(actual, "B", "a");
+            testCall(actual, "C", "a");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
     }
 
     @Test
     public void test8() {
         int testNumber = 8;
 
-        Pair actual = loadActual(testNumber);
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            Pair actual = loadActual(testNumber);
 
-        testDefinition(actual, "mom", "a", "b");
-        testDefinition(actual, "dad", "a", "b");
+            testDefinition(actual, "mom", "a", "b");
+            testDefinition(actual, "dad", "a", "b");
 
-        testCall(actual, "mom", "a", "b");
-        testCall(actual, "dad", "a", "b");
+            testCall(actual, "mom", "a", "b");
+            testCall(actual, "dad", "a", "b");
+        } catch (ConvertException e) {
+            Assert.fail("Error while testing: " + e.getMessage());
+        }
+        System.out.println("OK");
+    }
+
+    @Test(expected = ConvertException.class)
+    public void test9() throws ConvertException {
+        int testNumber = 9;
+
+        System.out.print("Test " + testNumber + ": ");
+        try {
+            loadActual(testNumber);
+        } catch (ConvertException e) {
+            System.out.println("OK");
+            throw e;
+        }
     }
 
     private void testCall(Pair actual, String... call) {

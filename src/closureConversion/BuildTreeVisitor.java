@@ -1,6 +1,10 @@
 package closureConversion;
 
-import jdk.nashorn.internal.ir.*;
+import jdk.nashorn.internal.ir.CallNode;
+import jdk.nashorn.internal.ir.FunctionNode;
+import jdk.nashorn.internal.ir.IdentNode;
+import jdk.nashorn.internal.ir.LexicalContext;
+import jdk.nashorn.internal.ir.VarNode;
 import jdk.nashorn.internal.ir.visitor.NodeVisitor;
 
 import java.util.*;
@@ -56,18 +60,17 @@ class BuildTreeVisitor extends NodeVisitor<LexicalContext> {
 
         FunctionDefinition current = Objects.requireNonNull(deque.pollFirst());
 
-        Set<String> diff = new HashSet<>(current.used);
-        diff.removeAll(current.defined);
+        Set<String> difference = new HashSet<>(current.used);
+        difference.removeAll(current.defined);
 
         if (!deque.isEmpty()) {
-            deque.getFirst().used.addAll(diff);
+            deque.getFirst().used.addAll(difference);
         }
 
         //closure
-        if (!diff.isEmpty()) {
-            current.used.removeAll(current.defined); //captured
-            List<String> captured = new ArrayList<>(current.used);
-            capturedParameters.put(getLocaleName(functionNode), new HashSet<>(captured));
+        if (!difference.isEmpty()) {
+            current.used.removeAll(current.defined);
+            capturedParameters.put(getLocaleName(functionNode), new HashSet<>(current.used));
         }
         edges.put(getLocaleName(functionNode), current.calls);
         defined.put(getLocaleName(functionNode), current.defined);
@@ -86,7 +89,9 @@ class BuildTreeVisitor extends NodeVisitor<LexicalContext> {
 
     @Override
     public boolean enterIdentNode(IdentNode identNode) {
-        if (!deque.isEmpty()) deque.getFirst().used.add(identNode.getName());
+        if (!deque.isEmpty()) {
+            deque.getFirst().used.add(identNode.getName());
+        }
         return false;
     }
 
@@ -101,9 +106,7 @@ class BuildTreeVisitor extends NodeVisitor<LexicalContext> {
             deque.getFirst().calls.add(functionName);
         }
 
-        for (Expression arg : callNode.getArgs()) {
-            arg.accept(this);
-        }
+        callNode.getArgs().forEach(arg -> arg.accept(this));
 
         return false;
     }

@@ -10,28 +10,60 @@ import jdk.nashorn.internal.runtime.options.Options;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * todo
+ * Find and move closures from other functions and add new parameters
  */
 public class Converter {
-    public static void main(String[] args) throws IOException {
+    /**
+     * @param args args[0] should contains filename for converting
+     *             cannot be null, should have only one not-null element
+     * @throws ConvertException throws if something wrong.
+     *                          <ul>
+     *                          <li>{@code args} == null</li>
+     *                          <li>{@code args.length} != 1</li>
+     *                          <li>{@code args[0]} == null</li>
+     *                          <li>error while reading</li>
+     *                          <li>error while parsing</li>
+     *                          </ul>
+     */
+    public static void main(String[] args) throws ConvertException {
+        if (args == null || args.length != 1 || args[0] == null) {
+            throw new ConvertException("Something wrong with String[] args: ");
+        }
         System.out.print(convert(args[0]));
     }
 
-    public static StringBuilder convert(String path) throws IOException {
+    /**
+     * Reads file by {@code path}, find closures, find functions, which
+     * depends on closures and convert them to first-level functions
+     *
+     * @param path path to source file
+     * @return converted code
+     * @throws ConvertException is reading or parsing error happened
+     */
+    public static StringBuilder convert(String path) throws ConvertException {
         Options options = new Options("nashorn");
-        options.set("anon.functions", true);
-        options.set("parse.only", true);
-        options.set("scripting", true);
 
-        ErrorManager errors = new ErrorManager();
+        ErrorManager errors = new ErrorManager(new PrintWriter(OutputStream.nullOutputStream()));
         Context context = new Context(options, errors, Thread.currentThread().getContextClassLoader());
-        Source source = Source.sourceFor("test", new File(path));
+
+        Source source;
+        try {
+            source = Source.sourceFor("test", new File(path));
+        } catch (IOException e) {
+            throw new ConvertException("Error while reading: " + e.getMessage());
+        }
 
         Parser parser = new Parser(context.getEnv(), source, errors);
         FunctionNode functionNode = parser.parse();
+
+        if (errors.hasErrors()) {
+            throw new ConvertException("Parsing error occurred");
+        }
 
         BuildTreeVisitor BTV = new BuildTreeVisitor(new LexicalContext());
         functionNode.accept(BTV);
@@ -41,13 +73,16 @@ public class Converter {
             dfs(start, BTV.edges, BTV.capturedParameters, BTV.defined);
         }
 
-        ConvertFunctionVisitor CFV = new ConvertFunctionVisitor(new LexicalContext(), convertToListsMap(BTV.capturedParameters));
+        ConvertFunctionVisitor CFV = new ConvertFunctionVisitor(
+                new LexicalContext(),
+                changeSetsToLists(BTV.capturedParameters)
+        );
         functionNode.accept(CFV);
 
         return CFV.getString();
     }
 
-    private static Map<String, List<String>> convertToListsMap(Map<String, Set<String>> capturedParameters) {
+    private static Map<String, List<String>> changeSetsToLists(Map<String, Set<String>> capturedParameters) {
         Map<String, List<String>> result = new HashMap<>();
         for (String value : capturedParameters.keySet()) {
             result.put(value, new ArrayList<>(capturedParameters.get(value)));
@@ -58,27 +93,24 @@ public class Converter {
     private static Map<String, Boolean> visited;
 
     private static void dfs(
-            String start, Map<String,
+            String current, Map<String,
             List<String>> edges,
             Map<String, Set<String>> parameters,
             Map<String, Set<String>> defined) {
 
-        if (visited.containsKey(start)) return;
-
-        visited.put(start, true);
-
-        if (!edges.containsKey(start)) {
+        if (visited.containsKey(current) || !edges.containsKey(current)) {
             return;
         }
 
-        if (!parameters.containsKey(start)) {
-            parameters.put(start, new HashSet<>());
-        }
-        for (String child : edges.get(start)) {
-            dfs(child, edges, parameters, defined);
-            parameters.get(start).addAll(parameters.get(child));
-        }
+        visited.put(current, true);
 
-        parameters.get(start).removeAll(defined.get(start));
+        if (!parameters.containsKey(current)) {
+            parameters.put(current, new HashSet<>());
+        }
+        for (String child : edges.get(current)) {
+            dfs(child, edges, parameters, defined);
+            parameters.get(current).addAll(parameters.get(child));
+        }
+        parameters.get(current).removeAll(defined.get(current));
     }
 }
