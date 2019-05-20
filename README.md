@@ -12,7 +12,7 @@
 Опираясь на результат работы **BuildTreeVisitor'a** преобразует все функции с замыканиями в функции верхнего уровня<br>
 
 ###### Тестирование:
-[Скрипт для запуска тестов](https://github.com/tihonovcore/closureConversion/tree/master/src/Tester.sh "Tester.sh") <br>
+[Скрипт для запуска тестов](https://github.com/tihonovcore/closureConversion/blob/master/Tester.sh "Tester.sh") <br>
 <code>./Tester.sh</code> - запуск скрипта<br>
 <code>build</code> - сборка<br>
 <code>test</code> - запуск тестов<br>
