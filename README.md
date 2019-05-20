@@ -1,9 +1,9 @@
 # Evaluate expression
 ### Здание к стажировке
-######Основной класс:
+###### Основной класс:
 [Converter](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/Converter.java "Converter")
 
-######Вспомогательные классы:
+###### Вспомогательные классы:
 [FunctionDefinition](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/FunctionDefinition.java "FunctionDefinition")
 Определяет функцию как списки объявленных переменных, используемых переменных, имён вызываемых методов и текстового предствления самой функции<br>
 [BuildTreeVisitor](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/BuildTreeVisitor.java "BTV")
@@ -11,7 +11,7 @@
 [ConvertFunctionVisitor](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/ConvertFunctionVisitor.java "CFV")
 Опираясь на результат работы **BuildTreeVisitor'a** преобразует все функции с замыканиями в функции верхнего уровня<br>
 
-######Тестирование:
+###### Тестирование:
 [Скрипт для запуска тестов](https://github.com/tihonovcore/closureConversion/tree/master/src/Tester.sh "Tester.sh") <br>
 <code>./Tester.sh</code> - запуск скрипта<br>
 <code>build</code> - сборка<br>
