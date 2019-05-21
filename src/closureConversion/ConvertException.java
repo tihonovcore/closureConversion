@@ -1,7 +1,7 @@
 package closureConversion;
 
-public class ConvertException extends Exception {
-    public ConvertException(String message) {
+class ConvertException extends Exception {
+    ConvertException(String message) {
         super(message);
     }
 }

@@ -5,7 +5,7 @@
 
 ###### Вспомогательные классы:
 [FunctionDefinition](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/FunctionDefinition.java "FunctionDefinition")
-Определяет функцию как списки объявленных переменных, используемых переменных, имён вызываемых методов и текстового предствления самой функции<br>
+Определяет функцию как список объявленных переменных, список используемых переменных, имён вызываемых методов и текстового предствления самой функции<br>
 [BuildTreeVisitor](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/BuildTreeVisitor.java "BTV")
 Строит дерево зависимостей методов и находит изначальные замыкания<br>
 [ConvertFunctionVisitor](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/ConvertFunctionVisitor.java "CFV")

@@ -48,7 +48,7 @@ class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
         }
     }
 
-    private void appendChanged(String... s) {
+    private void appendToChangedFunctions(String... s) {
         for (String value : s) {
             firstLevelFunctions.append(value);
         }
@@ -89,18 +89,18 @@ class ConvertFunctionVisitor extends NodeVisitor<LexicalContext> {
             current.used.removeAll(current.defined); //captured
             List<String> captured = new ArrayList<>(difference);
 
-            appendChanged("function ");
-            appendChanged(getLocaleName(functionNode));
-            appendChanged("(");
+            appendToChangedFunctions("function ");
+            appendToChangedFunctions(getLocaleName(functionNode));
+            appendToChangedFunctions("(");
 
             addParameters(firstLevelFunctions::append, functionNode.getParameters());
 
             for (int i = 0; i < captured.size(); i++) {
-                if (functionNode.getParameters().size() != 0 || i != 0) appendChanged(", ");
-                appendChanged(captured.get(i));
+                if (functionNode.getParameters().size() != 0 || i != 0) appendToChangedFunctions(", ");
+                appendToChangedFunctions(captured.get(i));
             }
 
-            appendChanged(") ", shift(current.text), "\n");
+            appendToChangedFunctions(") ", shift(current.text), "\n");
         }
 
         return false;

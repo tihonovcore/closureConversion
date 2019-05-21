@@ -5,24 +5,27 @@ import jdk.nashorn.internal.ir.visitor.NodeVisitor;
 
 import java.util.*;
 
-public class TestVisitor extends NodeVisitor<LexicalContext> {
-    /**
-     * Constructor
-     *
-     * @param lc a custom lexical context
-     */
-    public TestVisitor(LexicalContext lc) {
+/**
+ * Class is used for find method calls and parameters of each method
+ */
+class TestVisitor extends NodeVisitor<LexicalContext> {
+
+    TestVisitor(LexicalContext lc) {
         super(lc);
     }
 
     private Map<String, Set<String>> parameters = new HashMap<>();
-    private List<List<String>> calls = new ArrayList<>(); //<method name> <arg0> <arg1> ...
 
-    public Map<String, Set<String>> getParams() {
+    /**
+     * [method name] [arg0] [arg1] ...
+     */
+    private List<List<String>> calls = new ArrayList<>();
+
+    Map<String, Set<String>> getParams() {
         return parameters;
     }
 
-    public List<List<String>> getCalls() {
+    List<List<String>> getCalls() {
         return calls;
     }
 
