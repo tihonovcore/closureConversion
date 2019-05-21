@@ -12,8 +12,8 @@
 Опираясь на результат работы **BuildTreeVisitor'a** преобразует все функции с замыканиями в функции верхнего уровня<br>
 
 ###### Тестирование:
-[Скрипт для запуска тестов](https://github.com/tihonovcore/closureConversion/blob/master/Tester.sh "Tester.sh") <br>
-<code>./Tester.sh</code>, затем <code>build</code> или <code>test</code>
+[Скрипт для запуска тестов](https://github.com/tihonovcore/closureConversion/blob/master/Tester.sh "Tester.sh") 
+<code>./Tester.sh</code>, затем <code>build</code> или <code>test</code><br>
 [Папка с тестами](https://github.com/tihonovcore/closureConversion/tree/master/src/closureConversion/tests/scripts "Тесты")<br>
 [TestVisitor](https://github.com/tihonovcore/closureConversion/blob/master/src/closureConversion/tests/TestVisitor.java "TestVisitor") 
 Вспомогательный класс для тестов<br>
